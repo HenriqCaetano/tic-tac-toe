@@ -55,21 +55,27 @@ export default function Game() {
 
   //função que atualiza o jogo
   function handleSquareClick(id) {
-    //atualiza os quadrados
-    setSquares((currentSquares) => {
-      return currentSquares.map((square) => {
-        if (square.id === id && !square.locked) {
-          if (isXNext) {
-            setIsXNext(false); //passa a vez
-            return { ...square, value: "X", locked: true };
-          } else {
-            setIsXNext(true);
-            return { ...square, value: "O", locked: true };
+    
+    //atualiza os quadrados 
+    if(!squares[id].locked){
+      setSquares((currentSquares) => {
+        console.log("updated squares");
+        return currentSquares.map((square) => {
+          if (square.id === id && !square.locked) {
+            if (isXNext) {
+              setIsXNext(false); //passa a vez
+              return { ...square, value: "X", locked: true };
+            } else {
+              setIsXNext(true);
+              return { ...square, value: "O", locked: true };
+            }
           }
-        }
-        return square;
+          return square;
+        });
       });
-    });
+      setMoveCounter(currentCounter => currentCounter + 1)
+    }
+    console.log(history);
   }
 
   //verifica se houve vencedor sempre que o jogo muda
@@ -126,23 +132,29 @@ export default function Game() {
     setIsDraw(false);
   }
 
-
   //funcionalidade de histórico do jogo
-  const [history, setHistory] = useState([])
-  // const [moveCounter, setMoveCounter] = useState(0)
+  const [history, setHistory] = useState([]);
+  const [moveCounter, setMoveCounter] = useState(0)
 
   //sempre que o jogo mudar, atualize o histórico
-  useEffect(() =>{
-    // setMoveCounter(counter => counter + 1)
-    setHistory(currentHistory => {
-      return [...currentHistory, squares]
-    })
-  }, [squares])
+
+  useEffect(() => {
+    setHistory((currentHistory) => {
+      if(!currentHistory.includes({...squares, count: moveCounter})){
+        return [...currentHistory, {...squares, count: moveCounter}];
+      }
+      return [...currentHistory]
+      
+    });
+  }, [squares, moveCounter]);
 
   return (
     <div>
       <Board squares={squares} handleSquareClick={handleSquareClick} />
-      {/* <GameHistory history={history}/> */}
+      <li>
+        {}
+      </li>
+
       <button onClick={reStart} className="commom-button">
         Restart
       </button>
