@@ -1,15 +1,20 @@
-import React from 'react'
+import React from "react";
 
-export default function GameHistory({history}) {
 
-console.log(history);    
-
-  return (
-    <div>
-        {/* {history.map(entry =>{
-            return <button key={entry[0].id}>hello</button>
-        })} */}
-        <button>{history}</button>
-    </div>
-  )
+export function GameHistory({
+  moveCounter,
+  moveInHistory,
+  toggleHistoryOrder
+}) {
+  return <>      <li>
+        {moveCounter.map(move => {
+        return <ul key={move}>
+              <button onClick={() => moveInHistory(move)}>
+                Go to move #{move}
+              </button>
+            </ul>;
+      })}
+      </li>
+      <button onClick={toggleHistoryOrder}>Toggle History Order</button></>;
 }
+  

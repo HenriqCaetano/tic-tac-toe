@@ -1,6 +1,7 @@
+import {GameHistory} from './GameHistory.jsx';
 import React, { useCallback, useEffect, useState } from "react";
 import Board from "./Board";
-import GameHistory from "./GameHistory";
+
 
 export default function Game() {
   //verifica de quem é a vez
@@ -55,11 +56,12 @@ export default function Game() {
 
   //função que atualiza o jogo
   function handleSquareClick(id) {
-    
-    //atualiza os quadrados 
-    if(!squares[id].locked){
+    //atualiza os quadrados
+    if (!squares[id].locked) {
+      setMoveCounter((currentCounter) => {
+        return [...currentCounter, currentCounter.length];
+      });
       setSquares((currentSquares) => {
-        console.log("updated squares");
         return currentSquares.map((square) => {
           if (square.id === id && !square.locked) {
             if (isXNext) {
@@ -73,9 +75,8 @@ export default function Game() {
           return square;
         });
       });
-      setMoveCounter(currentCounter => currentCounter + 1)
     }
-    console.log(history);
+    // console.log(history);
   }
 
   //verifica se houve vencedor sempre que o jogo muda
@@ -130,31 +131,43 @@ export default function Game() {
     ]);
     setDoesWinnerExist(false);
     setIsDraw(false);
+    setMoveCounter([0]);
+    setHistory([]);
   }
 
   //funcionalidade de histórico do jogo
   const [history, setHistory] = useState([]);
-  const [moveCounter, setMoveCounter] = useState(0)
+  const [moveCounter, setMoveCounter] = useState([0]);
 
   //sempre que o jogo mudar, atualize o histórico
 
   useEffect(() => {
     setHistory((currentHistory) => {
-      if(!currentHistory.includes({...squares, count: moveCounter})){
-        return [...currentHistory, {...squares, count: moveCounter}];
+      if (!currentHistory.includes(squares)) {
+        return [...currentHistory, squares];
       }
-      return [...currentHistory]
-      
+      return [...currentHistory];
     });
-  }, [squares, moveCounter]);
+  }, [squares]);
 
+  function moveInHistory(move) {
+    setSquares(history[move]);
+    setHistory((currentHistory) => currentHistory.slice(0, move + 1));
+    setMoveCounter((currentCounter) => currentCounter.slice(0, move + 1));
+  }
+
+  function toggleHistoryOrder(){
+    setMoveCounter(currentCounter => {
+      let aux = [...currentCounter]
+      return aux.reverse()
+    })
+  }
+
+  //adicionar clique do botão para fazer o jogo voltar
   return (
     <div>
       <Board squares={squares} handleSquareClick={handleSquareClick} />
-      <li>
-        {}
-      </li>
-
+      <GameHistory moveCounter={moveCounter} moveInHistory={moveInHistory} toggleHistoryOrder={toggleHistoryOrder}  />
       <button onClick={reStart} className="commom-button">
         Restart
       </button>
