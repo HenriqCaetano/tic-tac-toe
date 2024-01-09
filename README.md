@@ -5,3 +5,6 @@
 - Displays history in move number format, allows navigation
 - Toggle button for ascending or descending order in history
 - Divided into components for better understanding
+
+## Future updates
+- Refactor code for best practices
