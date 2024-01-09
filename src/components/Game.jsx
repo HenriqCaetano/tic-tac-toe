@@ -1,7 +1,6 @@
-import {GameHistory} from './GameHistory.jsx';
-import React, { useCallback, useEffect, useState } from "react";
+import { GameHistory } from "./GameHistory.jsx";
+import React, { useEffect, useState } from "react";
 import Board from "./Board";
-
 
 export default function Game() {
   //verifica de quem é a vez
@@ -26,39 +25,14 @@ export default function Game() {
     { id: 8, value: "", locked: false, class: "square" },
   ]);
 
-  //verifica se há vencedor
-  //retorna o conjunto vencedor de quadrados ou null, se não há vencedor ainda
-  const getWinnerSquares = useCallback(() => {
-    //configurações de vitória
-    const lines = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-    //verifica cada configuração possível
-    for (let i = 0; i < lines.length; i++) {
-      const [a, b, c] = lines[i];
-      if (
-        squares[a].value &&
-        squares[a].value === squares[b].value &&
-        squares[a].value === squares[c].value
-      ) {
-        return [squares[a], squares[b], squares[c]];
-      }
-    }
-    return null;
-  }, [squares]);
-
   //função que atualiza o jogo
   function handleSquareClick(id) {
     //atualiza os quadrados
     if (!squares[id].locked) {
       setMoveCounter((currentCounter) => {
+        if (isReversed) {
+          return [currentCounter.length, ...currentCounter];
+        }
         return [...currentCounter, currentCounter.length];
       });
       setSquares((currentSquares) => {
@@ -81,6 +55,32 @@ export default function Game() {
 
   //verifica se houve vencedor sempre que o jogo muda
   useEffect(() => {
+    //verifica se há vencedor
+    const getWinnerSquares = () => {
+      //configurações de vitória
+      const lines = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6],
+      ];
+      //verifica cada configuração possível
+      for (let i = 0; i < lines.length; i++) {
+        const [a, b, c] = lines[i];
+        if (
+          squares[a].value &&
+          squares[a].value === squares[b].value &&
+          squares[a].value === squares[c].value
+        ) {
+          return [squares[a], squares[b], squares[c]];
+        }
+      }
+      return null;
+    };
     let winnerSquares = getWinnerSquares();
 
     //if there is a winner
@@ -114,7 +114,7 @@ export default function Game() {
       });
       setIsDraw(true);
     }
-  }, [squares, getWinnerSquares, doesWinnerExist, isDraw]);
+  }, [squares, doesWinnerExist, isDraw]);
 
   //reinicia o jogo
   function reStart() {
@@ -153,21 +153,38 @@ export default function Game() {
   function moveInHistory(move) {
     setSquares(history[move]);
     setHistory((currentHistory) => currentHistory.slice(0, move + 1));
-    setMoveCounter((currentCounter) => currentCounter.slice(0, move + 1));
+
+    isReversed
+      ? setMoveCounter((currentCounter) => {
+          let aux = [...currentCounter];
+          return aux
+            .reverse()
+            .slice(0, move + 1)
+            .reverse();
+        })
+      : setMoveCounter((currentCounter) => currentCounter.slice(0, move + 1));
   }
 
-  function toggleHistoryOrder(){
-    setMoveCounter(currentCounter => {
-      let aux = [...currentCounter]
-      return aux.reverse()
-    })
+  const [isReversed, setIsReversed] = useState(false);
+  //tem que mudar isso aqui...
+  function toggleHistoryOrder() {
+    setIsReversed(!isReversed);
+
+    setMoveCounter((currentCounter) => {
+      let aux = [...currentCounter];
+      return aux.reverse();
+    });
   }
 
   //adicionar clique do botão para fazer o jogo voltar
   return (
     <div>
       <Board squares={squares} handleSquareClick={handleSquareClick} />
-      <GameHistory moveCounter={moveCounter} moveInHistory={moveInHistory} toggleHistoryOrder={toggleHistoryOrder}  />
+      <GameHistory
+        moveCounter={moveCounter}
+        moveInHistory={moveInHistory}
+        toggleHistoryOrder={toggleHistoryOrder}
+      />
       <button onClick={reStart} className="commom-button">
         Restart
       </button>
